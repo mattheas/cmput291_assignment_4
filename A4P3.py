@@ -321,24 +321,23 @@ def populate_db(list_countries, list_part_ids):
 def part3_query(list_countries, list_part_ids):
 
     # define part3 query
-    sql_select_query = """SELECT p.partNumber, MAX(p.partPrice)
+    sql_select_query = """SELECT p.partNumber, p.madeIn, p.partPrice
     FROM Parts p
-    WHERE p.madeIn = ?
-    GROUP BY p.partNumber;"""
+    WHERE p.madeIn = ? AND p.partPrice >= (SELECT MAX(p1.partPrice) FROM Parts p1 WHERE p1.madeIn = ?);"""
 
     # generate radom country code 
     rand_country_index = random.randint(0,(len(list_countries)-1))
     rand_country = list_countries[rand_country_index]
 
     # execute query to find most expensive part in country code
-    c1.execute(sql_select_query, (str(rand_country),) )
+    c3.execute(sql_select_query, (str(rand_country), str(rand_country)) )
 
-    records = c1.fetchall()
+    records = c3.fetchall()
 
     print(" partNumber   MAX(part price)")
 
     for row in records:
-        print("{}   {}".format(row[0], row[1]))
+        print("{}   {}    {}".format(row[0], row[1], row[2]))
 
 
 
@@ -346,18 +345,18 @@ def part3_query(list_countries, list_part_ids):
 
 
     # query used to check if ACTUAL query is correct
-    sql_select_query1 = """SELECT p.partNumber, p.madeIn
+    sql_select_query1 = """SELECT p.partNumber, p.madeIn, p.partPrice
     FROM Parts p
     WHERE p.madeIn = ?;"""
 
-    c1.execute(sql_select_query1, (str(rand_country),) )
+    c3.execute(sql_select_query1, (str(rand_country),) )
 
-    records = c1.fetchall()
+    records = c3.fetchall()
 
     print(" partNumber   madeIn")
 
     for row in records:
-        print("{}   {}".format(row[0], row[1]))
+        print("{}   {}   {}".format(row[0], row[1], row[2]))
 
 
 
@@ -394,7 +393,7 @@ if __name__ == "__main__":
     country_list, part_id_list = extract_data(country_list, part_id_list)
 
     # now populate DB's randomly
-    #populate_db(country_list, part_id_list)
+    populate_db(country_list, part_id_list)
 
     # Run part 3
     part3_query(country_list, part_id_list)

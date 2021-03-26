@@ -1,6 +1,7 @@
 import sqlite3
 import csv
 import random
+import time
 
 # code used and modified from link below to read in UPC's from CSV file, starting at "with open..."
 #https://realpython.com/python-csv/
@@ -67,6 +68,8 @@ def extract_data(list_countries, list_part_ids):
 
 
 
+
+
 def populate_db(list_countries, list_part_ids):
 
     #counter_100, counter_1k, counter_10k, counter_100k, counter_1M = 0, 0, 0, 0, 0
@@ -74,11 +77,6 @@ def populate_db(list_countries, list_part_ids):
     # define INSERT query
     sql_insert_query = """INSERT INTO Parts (partNumber, partPrice, needsPart, madeIn)
     VALUES(?,?,?,?);"""
-
-    # copy partNumber list so we can remove partNumbers from it after they're inserted into DB
-    #temp_part_num_list = list_part_ids.copy()
-
-    
 
 
     #shuffle all part #'s/ countries once for DB
@@ -270,7 +268,7 @@ def populate_db(list_countries, list_part_ids):
 
 
 
-    '''
+    
 
 
     #shuffle all part #'s/ countries once for DB
@@ -315,7 +313,12 @@ def populate_db(list_countries, list_part_ids):
     c5.execute("SELECT COUNT (*) FROM Parts")
     rowcount = c5.fetchone()[0]
     print (rowcount)
-    '''
+    
+
+
+
+
+
 
 
 def part3_query(list_countries, list_part_ids):
@@ -325,10 +328,10 @@ def part3_query(list_countries, list_part_ids):
     FROM Parts p
     WHERE p.madeIn = ? AND p.partPrice >= (SELECT MAX(p1.partPrice) FROM Parts p1 WHERE p1.madeIn = ?);"""
 
-    # generate radom country code 
-    rand_country_index = random.randint(0,(len(list_countries)-1))
-    rand_country = list_countries[rand_country_index]
 
+
+
+    '''
     # execute query to find most expensive part in country code
     c3.execute(sql_select_query, (str(rand_country), str(rand_country)) )
 
@@ -338,12 +341,230 @@ def part3_query(list_countries, list_part_ids):
 
     for row in records:
         print("{}   {}    {}".format(row[0], row[1], row[2]))
+    '''
+
+    query_time_100 = []
+    # values 0 to 99 for DB A4v100.db
+    for x in range(50):
+        # generate radom country code 
+        rand_country_index = random.randint(0,(len(list_countries)-1))
+        rand_country = list_countries[rand_country_index]
+
+        # execute query to find most expensive part in random country code while timing it
+        start = time.time()
+        c1.execute(sql_select_query, (str(rand_country), str(rand_country)) )
+        end = time.time()
+
+        # add query time to list
+        query_time_100.append(end - start)
+      
+    
+    print('average query time of A4v100 in seconds without index = ',sum(query_time_100) / len(query_time_100))
+
+
+
+    query_time_1k = []
+    # values 0 to 99 for DB A4v100.db
+    for x in range(50):
+        # generate radom country code 
+        rand_country_index = random.randint(0,(len(list_countries)-1))
+        rand_country = list_countries[rand_country_index]
+
+        # execute query to find most expensive part in random country code while timing it
+        start = time.time()
+        c2.execute(sql_select_query, (str(rand_country), str(rand_country)) )
+        end = time.time()
+
+        # add query time to list
+        query_time_1k.append(end - start)
+      
+    
+    print('average query time of A4v1k in seconds without index = ',sum(query_time_1k) / len(query_time_1k))
+
+
+
+
+    query_time_10k = []
+    # values 0 to 99 for DB A4v100.db
+    for x in range(50):
+        # generate radom country code 
+        rand_country_index = random.randint(0,(len(list_countries)-1))
+        rand_country = list_countries[rand_country_index]
+
+        # execute query to find most expensive part in random country code while timing it
+        start = time.time()
+        c3.execute(sql_select_query, (str(rand_country), str(rand_country)) )
+        end = time.time()
+
+        # add query time to list
+        query_time_10k.append(end - start)
+      
+    
+    print('average query time of A4v10k in seconds without index = ',sum(query_time_10k) / len(query_time_10k))
+
+
+    query_time_100k = []
+    # values 0 to 99 for DB A4v100.db
+    for x in range(10):
+        # generate radom country code 
+        rand_country_index = random.randint(0,(len(list_countries)-1))
+        rand_country = list_countries[rand_country_index]
+
+        # execute query to find most expensive part in random country code while timing it
+        start = time.time()
+        c4.execute(sql_select_query, (str(rand_country), str(rand_country)) )
+        end = time.time()
+
+        # add query time to list
+        query_time_100k.append(end - start)
+      
+    
+    print('average query time of A4v100k in seconds without index = ',sum(query_time_100k) / len(query_time_100k))
+
+
+
+
+    query_time_1M = []
+    # values 0 to 99 for DB A4v100.db
+    for x in range(5):
+        # generate radom country code 
+        rand_country_index = random.randint(0,(len(list_countries)-1))
+        rand_country = list_countries[rand_country_index]
+
+        # execute query to find most expensive part in random country code while timing it
+        start = time.time()
+        c5.execute(sql_select_query, (str(rand_country), str(rand_country)) )
+        end = time.time()
+
+        # add query time to list
+        query_time_1M.append(end - start)
+      
+    
+    print('average query time of A4v1M in seconds without index = ',sum(query_time_1M) / len(query_time_1M))
+
+
+    # define and create index for all 5 db's
+    sql_create_index = '''CREATE INDEX idx_parts_country ON Parts(madeIn);'''
+    c1.execute(sql_create_index)
+    c2.execute(sql_create_index)
+    c3.execute(sql_create_index)
+    c4.execute(sql_create_index)
+    c5.execute(sql_create_index)
+
+
+
+
+    query_time_100_indexed = []
+    # values 0 to 99 for DB A4v100.db
+    for x in range(50):
+        # generate radom country code 
+        rand_country_index = random.randint(0,(len(list_countries)-1))
+        rand_country = list_countries[rand_country_index]
+
+        # execute query to find most expensive part in random country code while timing it
+        start = time.time()
+        c1.execute(sql_select_query, (str(rand_country), str(rand_country)) )
+        end = time.time()
+
+        # add query time to list
+        query_time_100_indexed.append(end - start)
+      
+    
+    print('average query time of A4v100 in seconds with index = ',sum(query_time_100_indexed) / len(query_time_100_indexed))
+
+
+
+    query_time_1k_indexed = []
+    # values 0 to 99 for DB A4v100.db
+    for x in range(50):
+        # generate radom country code 
+        rand_country_index = random.randint(0,(len(list_countries)-1))
+        rand_country = list_countries[rand_country_index]
+
+        # execute query to find most expensive part in random country code while timing it
+        start = time.time()
+        c2.execute(sql_select_query, (str(rand_country), str(rand_country)) )
+        end = time.time()
+
+        # add query time to list
+        query_time_1k_indexed.append(end - start)
+      
+    
+    print('average query time of A4v1k in seconds with index = ',sum(query_time_1k_indexed) / len(query_time_1k_indexed))
+
+
+
+
+    query_time_10k_indexed = []
+    # values 0 to 99 for DB A4v100.db
+    for x in range(50):
+        # generate radom country code 
+        rand_country_index = random.randint(0,(len(list_countries)-1))
+        rand_country = list_countries[rand_country_index]
+
+        # execute query to find most expensive part in random country code while timing it
+        start = time.time()
+        c3.execute(sql_select_query, (str(rand_country), str(rand_country)) )
+        end = time.time()
+
+        # add query time to list
+        query_time_10k_indexed.append(end - start)
+      
+    
+    print('average query time of A4v10k in seconds with index = ',sum(query_time_10k_indexed) / len(query_time_10k_indexed))
+
+
+    query_time_100k_indexed = []
+    # values 0 to 99 for DB A4v100.db
+    for x in range(10):
+        # generate radom country code 
+        rand_country_index = random.randint(0,(len(list_countries)-1))
+        rand_country = list_countries[rand_country_index]
+
+        # execute query to find most expensive part in random country code while timing it
+        start = time.time()
+        c4.execute(sql_select_query, (str(rand_country), str(rand_country)) )
+        end = time.time()
+
+        # add query time to list
+        query_time_100k_indexed.append(end - start)
+      
+    
+    print('average query time of A4v100k in seconds with index = ',sum(query_time_100k_indexed) / len(query_time_100k_indexed))
+
+
+
+
+    query_time_1M_indexed = []
+    # values 0 to 99 for DB A4v100.db
+    for x in range(5):
+        # generate radom country code 
+        rand_country_index = random.randint(0,(len(list_countries)-1))
+        rand_country = list_countries[rand_country_index]
+
+        # execute query to find most expensive part in random country code while timing it
+        start = time.time()
+        c5.execute(sql_select_query, (str(rand_country), str(rand_country)) )
+        end = time.time()
+
+        # add query time to list
+        query_time_1M_indexed.append(end - start)
+      
+    
+    print('average query time of A4v1M in seconds with index = ',sum(query_time_1M_indexed) / len(query_time_1M_indexed))
 
 
 
 
 
 
+
+
+
+
+
+    # query below used to test if part3 query is working correctly
+    '''
     # query used to check if ACTUAL query is correct
     sql_select_query1 = """SELECT p.partNumber, p.madeIn, p.partPrice
     FROM Parts p
@@ -357,6 +578,7 @@ def part3_query(list_countries, list_part_ids):
 
     for row in records:
         print("{}   {}   {}".format(row[0], row[1], row[2]))
+    '''
 
 
 
@@ -379,11 +601,34 @@ if __name__ == "__main__":
     c5 = conn5.cursor()
 
     # used to clear all rows in table if needed
-    '''
+    
     sql_update_query = """DELETE from Parts """
     c1.execute(sql_update_query)
+    c2.execute(sql_update_query)
+    c3.execute(sql_update_query)
+    c4.execute(sql_update_query)
+    c5.execute(sql_update_query)
     conn1.commit()
-    '''
+    
+
+    # drop idxMadeIn index if it exists for all db's
+    sql_drop_query = '''DROP INDEX IF EXISTS idxMadeIn;'''
+    c1.execute(sql_drop_query)
+    c2.execute(sql_drop_query)
+    c3.execute(sql_drop_query)
+    c4.execute(sql_drop_query)
+    c5.execute(sql_drop_query)
+
+
+    # drop idxMadeIn index if it exists for all db's
+    sql_drop_query = '''DROP INDEX IF EXISTS idx_parts_country;'''
+    c1.execute(sql_drop_query)
+    c2.execute(sql_drop_query)
+    c3.execute(sql_drop_query)
+    c4.execute(sql_drop_query)
+    c5.execute(sql_drop_query)
+
+    
 
     # lists to hold part number ID's and country abbreviations
     country_list = []
